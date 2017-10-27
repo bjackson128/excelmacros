@@ -1,0 +1,26 @@
+Option Explicit
+
+Function ADJAVG(myRng As Range, Optional minCount As Integer)
+    
+    Dim rngSum As Double
+    Dim rngMax As Double
+    Dim rngMin As Double
+    Dim rngCount As Double
+    
+    If IsMissing(minCount) Then
+        minCount = 0
+        ElseIf minCount < 0 Then
+        ADJAVG = CVErr(xlErrNum)
+        Else: rngCount = Application.WorksheetFunction.Count(myRng)
+    
+        If rngCount < minCount Then
+            ADJAVG = Application.WorksheetFunction.Average(myRng)
+        Else: rngSum = Application.WorksheetFunction.Sum(myRng)
+            rngMax = Application.WorksheetFunction.Max(myRng)
+            rngMin = Application.WorksheetFunction.Min(myRng)
+            rngCount = Application.WorksheetFunction.Count(myRng)
+            ADJAVG = (rngSum - rngMax - rngMin) / (rngCount - 2)
+        End If
+    End If
+    
+End Function

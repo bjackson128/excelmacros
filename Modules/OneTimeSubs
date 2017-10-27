@@ -1,0 +1,43 @@
+Option Explicit
+ 
+Sub z_OneTimeIndentLevelOutput()
+    Dim c As Range
+    Application.ScreenUpdating = False
+    For Each c In Selection
+        c.Offset(0, 2).Value = c.INDENTLEVEL
+    Next
+    Application.ScreenUpdating = True
+End Sub
+
+Sub z_OneTimeAnthemCopyProduct()
+    Dim c As Range
+    Dim i As Integer
+    Dim a As Integer
+    i = 1
+    a = 0
+    For Each c In Selection
+        If c.Offset(0, 2).Value = 4 Then
+            Do While i <= 10
+                If c.Offset(-i, 2).Value = 3 Then
+                    c.Offset(0, -1).Value = c.Offset(-i, 0).Value
+                    Exit Do
+                End If
+                i = i + 1
+            Loop
+        End If
+        i = 1
+    Next
+    For Each c In Selection
+        If c.Offset(0, 2).Value = 3 Then
+            c.EntireRow.Delete
+        End If
+    Next
+End Sub
+
+Sub z_OneTimeCellBackgroundColor()
+    Dim c As Range
+    For Each c In Selection
+        c.Value = c.Offset(0, -2).Interior.Color
+        c.Interior.Color = c.Offset(0, -2).Interior.Color
+    Next
+End Sub

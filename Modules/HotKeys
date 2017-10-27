@@ -1,0 +1,225 @@
+
+'   These macros are designed to replace hotkeys found in other
+'   Excel add-ins like FactSet, CapitalIQ and Macabacus.
+'
+'   "Auto_Open" below will run as soon as this workbook is opened.
+'   Save this Module into your "PERSONAL.XLSB" file to have it
+'   automatically run when you start Excel.
+'   It enables the hotkeys below. The actual key combinations can
+'   be changed below.
+'
+'   "^" = Ctrl key
+'   Capitalization matters ("^B" = Ctrl + Shift + b)
+'   Same with symbols ("^$" = Ctrl + Shift + 4)
+
+Option Explicit
+
+Sub Auto_Open()
+    Application.OnKey "^;", "BlackBlueToggle"
+    Application.OnKey "^'", "FontColorCycle"
+    Application.OnKey "^4", "AccountingToggle1Dec"
+    Application.OnKey "^0", "AccountingToggle0Dec"
+    Application.OnKey "^3", "NonAccountingNumFormat"
+    Application.OnKey "^$", "ForeignAccounting"
+    Application.OnKey "^5", "PercentCycle"
+    Application.OnKey "^K", "BackgroundCycle"
+    Application.OnKey "^8", "MultipleCycle"
+    Application.OnKey "^D", "DateCycle"
+    Application.OnKey "^,", "'DecimalChange ""Increase""'"
+    Application.OnKey "^.", "'DecimalChange ""Decrease""'"
+    Application.OnKey "^H", "CenterAlign"
+    Application.OnKey "^B", "BorderCycle"
+    Application.OnKey "^N", "UnderlineCycle"
+    Application.OnKey "{F1}", "" ' Disables the F1 key
+End Sub
+
+Private Sub BlackBlueToggle()
+    With Selection.Font
+        If .Color = 0 Then
+            .Color = RGB(0, 0, 255)
+        Else: .Color = 0
+        End If
+    End With
+End Sub
+
+Private Sub FontColorCycle()
+    Dim cycleColors As Variant
+    cycleColors = Array(RGB(0, 0, 0), _
+                        RGB(0, 0, 255), _
+                        RGB(0, 128, 0), _
+                        RGB(128, 0, 128), _
+                        RGB(255, 0, 0), _
+                        RGB(255, 255, 255))
+    With Selection.Font
+        Dim i As Integer
+        Dim noMatch As Boolean
+        noMatch = True
+        For i = 0 To UBound(cycleColors):
+            If .Color = cycleColors(i) And i = UBound(cycleColors) And noMatch Then
+                .Color = cycleColors(0)
+                noMatch = False
+            ElseIf .Color = cycleColors(i) And noMatch Then
+                .Color = cycleColors(i + 1)
+                noMatch = False
+            End If
+        Next
+        If noMatch = True Then
+            .Color = cycleColors(0)
+        End If
+    End With
+End Sub
+
+Private Sub AccountingToggle1Dec()
+    If Selection.NumberFormat = "_(* #,##0.0_);_(* (#,##0.0);_(* ""-""?_);_(@_)" Then
+        Selection.NumberFormat = "_($* #,##0.0_);_($* (#,##0.0);_($* ""-""?_);_(@_)"
+    Else: Selection.NumberFormat = "_(* #,##0.0_);_(* (#,##0.0);_(* ""-""?_);_(@_)"
+    End If
+End Sub
+
+Private Sub AccountingToggle0Dec()
+    If Selection.NumberFormat = "_(* #,##0_);_(* (#,##0);_(* ""-""_);_(@_)" Then
+        Selection.NumberFormat = "_($* #,##0_);_($* (#,##0);_($* ""-""_);_(@_)"
+    Else: Selection.NumberFormat = "_(* #,##0_);_(* (#,##0);_(* ""-""_);_(@_)"
+    End If
+End Sub
+
+Private Sub ForeignAccounting()
+    If Selection.NumberFormat = "_(€* #,##0.0_);_(€* (#,##0.0);_(€* ""-""?_);_(@_)" Then
+        Selection.NumberFormat = "_(€* #,##0_);_(€* (#,##0);_(€* ""-""_);_(@_)"
+    Else: Selection.NumberFormat = "_(€* #,##0.0_);_(€* (#,##0.0);_(€* ""-""?_);_(@_)"
+    End If
+End Sub
+
+Private Sub NonAccountingNumFormat()
+    If Selection.NumberFormat = "#,##0;-#,##0;-" Then
+        Selection.NumberFormat = "$#,##0;-$#,##0;$-"
+    Else: Selection.NumberFormat = "#,##0;-#,##0;-"
+    End If
+End Sub
+
+Private Sub PercentCycle()
+    If Selection.NumberFormat = "* 0.0%_0;* (0.0%)_0" Then
+        Selection.NumberFormat = "0 ""bps"""
+    Else: Selection.NumberFormat = "* 0.0%_0;* (0.0%)_0"
+    End If
+End Sub
+
+Private Sub BackgroundCycle()
+    With Selection.Interior
+        If .Color = RGB(79, 129, 189) Then
+            .Color = RGB(192, 80, 77)
+        ElseIf .Color = RGB(192, 80, 77) Then
+            .Color = RGB(208, 216, 232)
+        ElseIf .Color = RGB(208, 216, 232) Then
+            .Color = RGB(233, 237, 244)
+        ElseIf .Color = RGB(208, 216, 232) Then
+            .Color = xlNone
+        Else: .Color = RGB(79, 129, 189)
+        End If
+    End With
+End Sub
+
+Private Sub MultipleCycle()
+    If Selection.NumberFormat = "* 0.0x_0;* -0.0x_0;* 0.0x_0;@_)" Then
+        Selection.NumberFormat = "* 0.0_x_0;* -0.0_x_0;* 0.0_x_0;@_)"
+    ElseIf Selection.NumberFormat = "* 0.0_x_0;* -0.0_x_0;* 0.0_x_0;@_)" Then
+        Selection.NumberFormat = "0.0x;-0.0x;0.0x"
+    Else: Selection.NumberFormat = "* 0.0x_0;* -0.0x_0;* 0.0x_0;@_)"
+    End If
+End Sub
+
+Sub DecimalChange(IncreaseDecrease As String)
+' Note: Can't make this private for some reason. If it is private,
+' Excel can't access it from the hotkey. Must be something to
+' do with the argument and I don't want to spend the time to
+' figure it out.
+
+    Application.ScreenUpdating = False
+
+    Dim actCell As Range
+    Dim myRng As Range
+    Dim myCell As Range
+
+    Set myRng = Selection
+    Set actCell = ActiveCell
+
+    For Each myCell In myRng.Cells
+        myCell.Select
+        If IncreaseDecrease = "Increase" Then
+            CommandBars.FindControl(ID:=398).Execute
+        ElseIf IncreaseDecrease = "Decrease" Then
+            CommandBars.FindControl(ID:=399).Execute
+        Else: MsgBox ("VBA ERROR - BAJ")
+        End If
+    Next myCell
+
+    myRng.Select
+    actCell.Activate
+
+    Application.ScreenUpdating = True
+    
+End Sub
+
+Private Sub CenterAlign()
+    If Selection.HorizontalAlignment = xlCenterAcrossSelection Then
+        Selection.HorizontalAlignment = xlGeneral
+    Else: Selection.HorizontalAlignment = xlCenterAcrossSelection
+    End If
+End Sub
+
+Private Sub DateCycle()
+    If Selection.NumberFormat = "m/d/yy" Then
+        Selection.NumberFormat = "m/d/yyyy"
+    ElseIf Selection.NumberFormat = "m/d/yyyy" Then
+        Selection.NumberFormat = "yyyy"
+    ElseIf Selection.NumberFormat = "yyyy" Then
+        Selection.NumberFormat = "yyyy""A"""
+    ElseIf Selection.NumberFormat = "yyyy""A""" Then
+        Selection.NumberFormat = "yyyy""E"""
+    ElseIf Selection.NumberFormat = "yyyy""E""" Then
+        Selection.NumberFormat = "mmm-yy"
+    Else: Selection.NumberFormat = "m/d/yy"
+    End If
+End Sub
+
+Private Sub BorderCycle()
+
+    Dim BorderType As Integer
+
+    Selection.Borders(xlDiagonalDown).LineStyle = xlNone
+    Selection.Borders(xlDiagonalUp).LineStyle = xlNone
+    Selection.Borders(xlInsideVertical).LineStyle = xlNone
+    Selection.Borders(xlInsideHorizontal).LineStyle = xlNone
+
+    If Selection.Borders(xlEdgeLeft).LineStyle = xlContinuous And _
+        Selection.Borders(xlEdgeTop).LineStyle = xlContinuous And _
+        Selection.Borders(xlEdgeBottom).LineStyle = xlContinuous And _
+        Selection.Borders(xlEdgeRight).LineStyle = xlContinuous Then
+            BorderType = -4115
+        ElseIf Selection.Borders(xlEdgeLeft).LineStyle = xlDash And _
+        Selection.Borders(xlEdgeTop).LineStyle = xlDash And _
+        Selection.Borders(xlEdgeBottom).LineStyle = xlDash And _
+        Selection.Borders(xlEdgeRight).LineStyle = xlDash Then
+            BorderType = -4142
+        Else: BorderType = 1
+    End If
+    
+    Selection.Borders(xlEdgeLeft).Color = 0
+    Selection.Borders(xlEdgeTop).Color = 0
+    Selection.Borders(xlEdgeBottom).Color = 0
+    Selection.Borders(xlEdgeRight).Color = 0
+    Selection.Borders(xlEdgeLeft).LineStyle = BorderType
+    Selection.Borders(xlEdgeTop).LineStyle = BorderType
+    Selection.Borders(xlEdgeBottom).LineStyle = BorderType
+    Selection.Borders(xlEdgeRight).LineStyle = BorderType
+
+End Sub
+
+Private Sub UnderlineCycle()
+    If Selection.Font.Underline = xlUnderlineStyleSingleAccounting Then
+        Selection.Font.Underline = xlUnderlineStyleDoubleAccounting
+        ElseIf Selection.Font.Underline = xlUnderlineStyleDoubleAccounting Then
+        Selection.Font.Underline = xlUnderlineStyleNone
+        Else: Selection.Font.Underline = xlUnderlineStyleSingleAccounting
+    End If
+End Sub

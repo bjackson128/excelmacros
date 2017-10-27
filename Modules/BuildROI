@@ -1,0 +1,129 @@
+Option Explicit
+
+Sub ROITable()
+    Dim colGrp
+    colGrp = Application.InputBox(prompt:="How many column groups?")
+End Sub
+
+Function Col_Letter(lngCol As Long) As String
+    Dim vArr
+    vArr = Split(Cells(1, lngCol).Address(True, False), "$")
+    Col_Letter = vArr(0) + ":" + vArr(0)
+End Function
+
+Sub EOLSummaryTable()
+    
+    Dim memLstName As String
+    memLstName = ActiveSheet.Name
+    
+    Dim hdrRow As Range
+    Dim c As Range
+    
+    Dim pdArray As Variant
+    pdArray = Array("000_030", "031_060", "061_090", _
+                    "091_120", "121_150", "151_180", _
+                    "181_210", "211_240", "241_270", _
+                    "271_300", "301_330", "331_360")
+    
+    Dim tcCol As Collection
+    Set tcCol = New Collection
+    Dim deCol As Collection
+    Set deCol = New Collection
+    Dim tc_colCol As Collection
+    Set tc_colCol = New Collection
+    Dim de_colCol As Collection
+    Set de_colCol = New Collection
+    
+    Dim x As Variant
+
+    Set hdrRow = Range("A1", Range("A1").End(xlToRight))
+    For Each c In hdrRow
+        For Each x In pdArray
+            If c.Value = "TC_" + x Then
+                tcCol.Add Application.WorksheetFunction.Sum(Columns(c.Column)), Key:="TC_" + x
+                tc_colCol.Add Col_Letter(c.Column), Key:="TC_" + x
+            ElseIf c.Value = "DE_" + x Then
+                deCol.Add Application.WorksheetFunction.Sum(Columns(c.Column)), Key:="DE_" + x
+                de_colCol.Add Col_Letter(c.Column), Key:="DE_" + x
+            End If
+        Next
+    Next
+    
+    Dim newSheetName As String
+    newSheetName = "BrettSummary"
+    Dim myDollarFormat As String
+    myDollarFormat = "$#,##0;-$#,##0;-"
+    Dim tableFirstRow As Integer
+    tableFirstRow = 1
+    
+    ActiveWorkbook.Sheets.Add().Name = newSheetName
+    
+    Dim i As Integer
+    
+    With ActiveWorkbook.Worksheets(newSheetName)
+        .Range("A1").Value = "Period"
+        .Range("B1").Value = "MemberMonths"
+        .Range("C1").Value = "BaselinePMPM"
+        .Range("D1").Value = "AspirePMPM"
+        .Range("E1").Value = "SavingsPMPM"
+        .Range("F1").Value = "TotalSavings"
+        
+        i = tableFirstRow + 13
+        .Range("A" + CStr(i)).Value = "Total"
+        .Range("B" + CStr(i)).Formula = "=SUM(B2:B13)"
+        .Range("C" + CStr(i)).Formula = "=SUM(C2:C13)"
+        .Range("D" + CStr(i)).Formula = "=SUM(D2:D13)"
+        .Range("E" + CStr(i)).Formula = "=SUM(E2:E13)"
+        .Range("F" + CStr(i)).Formula = "=SUM(F2:F13)"
+        
+        i = tableFirstRow + 1
+        For Each x In pdArray
+            .Range("A" + CStr(i)).Value = x
+            .Range("B" + CStr(i)).Formula = "=SUM('" + memLstName + "'!" + de_colCol("DE_" + x) + ")"
+            .Range("D" + CStr(i)).Formula = "=SUM('" + memLstName + "'!" + tc_colCol("TC_" + x) + ")/B" + CStr(i)
+            .Range("D" + CStr(i)).NumberFormat = myDollarFormat
+            .Range("E" + CStr(i)).Formula = "=C" + CStr(i) + "-D" + CStr(i)
+            i = i + 1
+        Next
+                
+        i = tableFirstRow + 1
+        For i = tableFirstRow + 1 To tableFirstRow + 12
+            .Range("F" + CStr(i)).Formula = "=B" + CStr(i) + "*E" + CStr(i)
+            .Range("F" + CStr(i)).NumberFormat = myDollarFormat
+        Next i
+        
+        ' Bonus payment calculation
+        .Range("H1").Value = "Description"
+        .Range("H2").Value = "Gross Savings"
+        .Range("H3").Value = "Gross Savings PMPM"
+        .Range("H4").Value = "Aspire Fees"
+        
+        .Range("I2").Formula = "=F14"
+        .Range("I3").Formula = "=I2/B14"
+        
+    End With
+    
+End Sub
+
+Sub TransposeExactFormulaHorizToVert()
+    Dim c As Range
+    Dim i As Integer
+    Set c = Selection
+    For i = 1 To c.Count
+        ActiveCell.Offset(i, 0).Formula = ActiveCell.Offset(0, i).Formula
+    Next
+End Sub
+
+Sub PasteRangeFormulasExact()
+    Dim tgt As Range
+    Dim c As Range
+    Dim i As Integer
+    Dim tgtRangeStart As Range
+    Set tgtRangeStart = Application.InputBox(prompt:="Enter first cell in range (range has to be top to bottom)", Type:=8)
+    Set tgt = tgtRangeStart
+    i = 0
+    For Each c In Selection
+        tgtRangeStart.Offset(i, 0).Formula = c.Formula
+        i = i + 1
+    Next
+End Sub

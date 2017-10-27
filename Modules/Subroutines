@@ -1,0 +1,147 @@
+Option Explicit
+ 
+Sub Check_Dependents_Range()
+    Dim c As Range
+    Dim MSG1 As VbMsgBoxResult
+    Dim deps As Integer
+    Application.ScreenUpdating = False
+    For Each c In Selection
+        On Error Resume Next
+        deps = deps + c.Dependents.Count
+        If deps > 500 Then
+            MsgBox ("Selected range contains over 500 dependents. Past Brett may have just saved you from a crash. Exiting now.")
+            Exit Sub
+        End If
+    Next
+    For Each c In Selection
+        c.ShowDependents
+    Next
+    Application.ScreenUpdating = True
+End Sub
+
+Sub Reset_Active_Cells()
+    Dim i As Long
+    Dim actSheet As Long
+    actSheet = ActiveWorkbook.ActiveSheet.Index
+    Application.ScreenUpdating = False
+    For i = 1 To ActiveWorkbook.Sheets.Count
+        If Sheets(i).Visible = False Then
+            Sheets(i).Visible = True
+            Application.Goto reference:=Sheets(i).Range("A1"), scroll:=True
+            Sheets(i).Visible = False
+        Else: Application.Goto reference:=Sheets(i).Range("A1"), scroll:=True
+        End If
+    Next i
+    ActiveWorkbook.Worksheets(1).Activate
+    ActiveWorkbook.Worksheets(actSheet).Activate
+    Application.ScreenUpdating = True
+End Sub
+
+
+Sub PageBreakRemove()
+    ActiveSheet.DisplayPageBreaks = False
+End Sub
+
+Sub WrapIfError()
+
+    Dim rng As Range
+    Dim Cell As Range
+    Dim x As String
+
+    'Determine if a single cell or range is selected
+    If Selection.Cells.Count = 1 Then
+        Set rng = Selection
+        If Not rng.HasFormula Then GoTo NoFormulas
+    Else
+        'Get Range of Cells that Only Contain Formulas
+        On Error GoTo NoFormulas
+        Set rng = Selection.SpecialCells(xlCellTypeFormulas)
+        On Error GoTo 0
+    End If
+
+    'Loop Through Each Cell in Range and add =IFERROR([formula],"")
+    For Each Cell In rng.Cells
+        x = Cell.Formula
+        Cell = "=IFERROR(" & Right(x, Len(x) - 1) & "," & 0 & ")"
+    Next Cell
+
+Exit Sub
+
+'Error Handler
+NoFormulas:
+  MsgBox "There were no formulas found in your selection!"
+
+End Sub
+
+Sub WrapIfErrorArray()
+
+Dim rng As Range
+Dim Cell As Range
+Dim x As String
+
+'Determine if a single cell or range is selected
+  If Selection.Cells.Count = 1 Then
+    Set rng = Selection
+    If Not rng.HasFormula Then GoTo NoFormulas
+  Else
+    'Get Range of Cells that Only Contain Formulas
+      On Error GoTo NoFormulas
+        Set rng = Selection.SpecialCells(xlCellTypeFormulas)
+      On Error GoTo 0
+  End If
+
+'Loop Through Each Cell in Range and add =IFERROR([formula],"")
+  For Each Cell In rng.Cells
+    x = Cell.FormulaArray
+    Cell.FormulaArray = "=IFERROR(" & Right(x, Len(x) - 1) & "," & 0 & ")"
+  Next Cell
+
+Exit Sub
+
+'Error Handler
+NoFormulas:
+  MsgBox "There were no formulas found in your selection!"
+
+End Sub
+
+Sub WhiteBorders()
+    Dim c As Range
+    Selection.Borders(xlDiagonalDown).LineStyle = xlNone
+    Selection.Borders(xlDiagonalUp).LineStyle = xlNone
+    With Selection.Borders(xlEdgeLeft)
+        .LineStyle = xlContinuous
+        .ThemeColor = 1
+        .TintAndShade = 0
+        .Weight = xlMedium
+    End With
+    With Selection.Borders(xlEdgeTop)
+        .LineStyle = xlContinuous
+        .ThemeColor = 1
+        .TintAndShade = 0
+        .Weight = xlMedium
+    End With
+    With Selection.Borders(xlEdgeBottom)
+        .LineStyle = xlContinuous
+        .ThemeColor = 1
+        .TintAndShade = 0
+        .Weight = xlMedium
+    End With
+    With Selection.Borders(xlEdgeRight)
+        .LineStyle = xlContinuous
+        .ThemeColor = 1
+        .TintAndShade = 0
+        .Weight = xlMedium
+    End With
+    With Selection.Borders(xlInsideVertical)
+        .LineStyle = xlContinuous
+        .ThemeColor = 1
+        .TintAndShade = 0
+        .Weight = xlMedium
+    End With
+    With Selection.Borders(xlInsideHorizontal)
+        .LineStyle = xlContinuous
+        .ThemeColor = 1
+        .TintAndShade = 0
+        .Weight = xlMedium
+    End With
+End Sub
