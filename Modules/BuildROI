@@ -64,7 +64,7 @@ Sub EOLSummaryTable()
         .Range("A1").Value = "Period"
         .Range("B1").Value = "MemberMonths"
         .Range("C1").Value = "BaselinePMPM"
-        .Range("D1").Value = "AspirePMPM"
+        .Range("D1").Value = "TreatmentPMPM"
         .Range("E1").Value = "SavingsPMPM"
         .Range("F1").Value = "TotalSavings"
         
@@ -96,7 +96,7 @@ Sub EOLSummaryTable()
         .Range("H1").Value = "Description"
         .Range("H2").Value = "Gross Savings"
         .Range("H3").Value = "Gross Savings PMPM"
-        .Range("H4").Value = "Aspire Fees"
+        .Range("H4").Value = "Program Fees"
         
         .Range("I2").Formula = "=F14"
         .Range("I3").Formula = "=I2/B14"
