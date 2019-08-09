@@ -1,3 +1,7 @@
+## PERSONAL.XLSB
+
+* On Windows 10, it is located in `~/AppData/Roaming/Microsoft/Excel/XLSTART/`
+
 ## Quick Access Toolbar
 
 1. `Group Objects`
