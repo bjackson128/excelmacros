@@ -4,7 +4,7 @@ Sub z_OneTimeIndentLevelOutput()
     Dim c As Range
     Application.ScreenUpdating = False
     For Each c In Selection
-        c.Offset(0, 2).Value = c.INDENTLEVEL
+        c.Offset(0, 2).Value = c.IndentLevel
     Next
     Application.ScreenUpdating = True
 End Sub
