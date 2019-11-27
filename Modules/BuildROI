@@ -104,26 +104,3 @@ Sub EOLSummaryTable()
     End With
     
 End Sub
-
-Sub TransposeExactFormulaHorizToVert()
-    Dim c As Range
-    Dim i As Integer
-    Set c = Selection
-    For i = 1 To c.Count
-        ActiveCell.Offset(i, 0).Formula = ActiveCell.Offset(0, i).Formula
-    Next
-End Sub
-
-Sub PasteRangeFormulasExact()
-    Dim tgt As Range
-    Dim c As Range
-    Dim i As Integer
-    Dim tgtRangeStart As Range
-    Set tgtRangeStart = Application.InputBox(prompt:="Enter first cell in range (range has to be top to bottom)", Type:=8)
-    Set tgt = tgtRangeStart
-    i = 0
-    For Each c In Selection
-        tgtRangeStart.Offset(i, 0).Formula = c.Formula
-        i = i + 1
-    Next
-End Sub

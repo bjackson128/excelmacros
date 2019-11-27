@@ -9,7 +9,7 @@ Sub Check_Dependents_Range()
         On Error Resume Next
         deps = deps + c.Dependents.Count
         If deps > 500 Then
-            MsgBox ("Selected range contains over 500 dependents. Past Brett may have just saved you from a crash. Exiting now.")
+            MsgBox ("Selected range contains over 500 dependents. Exiting now.")
             Exit Sub
         End If
     Next
@@ -75,32 +75,33 @@ End Sub
 
 Sub WrapIfErrorArray()
 
-Dim rng As Range
-Dim Cell As Range
-Dim x As String
+    Dim rng As Range
+    Dim Cell As Range
+    Dim x As String
+    
+    'Determine if a single cell or range is selected
+      If Selection.Cells.Count = 1 Then
+        Set rng = Selection
+        If Not rng.HasFormula Then GoTo NoFormulas
+      Else
+        'Get Range of Cells that Only Contain Formulas
+          On Error GoTo NoFormulas
+            Set rng = Selection.SpecialCells(xlCellTypeFormulas)
+          On Error GoTo 0
+      End If
+    
+    'Loop Through Each Cell in Range and add =IFERROR([formula],"")
+      For Each Cell In rng.Cells
+        x = Cell.FormulaArray
+        'Cell.FormulaArray = "=IFERROR(" & Right(x, Len(x) - 1) & "," & 0 & ")"
+        Cell.FormulaArray = "=IFERROR(" & Right(x, Len(x) - 1) & ", 0)"
+      Next Cell
+    
+    Exit Sub
 
-'Determine if a single cell or range is selected
-  If Selection.Cells.Count = 1 Then
-    Set rng = Selection
-    If Not rng.HasFormula Then GoTo NoFormulas
-  Else
-    'Get Range of Cells that Only Contain Formulas
-      On Error GoTo NoFormulas
-        Set rng = Selection.SpecialCells(xlCellTypeFormulas)
-      On Error GoTo 0
-  End If
-
-'Loop Through Each Cell in Range and add =IFERROR([formula],"")
-  For Each Cell In rng.Cells
-    x = Cell.FormulaArray
-    Cell.FormulaArray = "=IFERROR(" & Right(x, Len(x) - 1) & "," & 0 & ")"
-  Next Cell
-
-Exit Sub
-
-'Error Handler
+    'Error Handler
 NoFormulas:
-  MsgBox "There were no formulas found in your selection!"
+    MsgBox "There were no formulas found in your selection!"
 
 End Sub
 
@@ -144,4 +145,27 @@ Sub WhiteBorders()
         .TintAndShade = 0
         .Weight = xlMedium
     End With
+End Sub
+
+Sub TransposeExactFormulaHorizToVert()
+    Dim c As Range
+    Dim i As Integer
+    Set c = Selection
+    For i = 1 To c.Count
+        ActiveCell.Offset(i, 0).Formula = ActiveCell.Offset(0, i).Formula
+    Next
+End Sub
+
+Sub PasteRangeFormulasExact()
+    Dim tgt As Range
+    Dim c As Range
+    Dim i As Integer
+    Dim tgtRangeStart As Range
+    Set tgtRangeStart = Application.InputBox(prompt:="Enter first cell in range (range has to be top to bottom)", Type:=8)
+    Set tgt = tgtRangeStart
+    i = 0
+    For Each c In Selection
+        tgtRangeStart.Offset(i, 0).Formula = c.Formula
+        i = i + 1
+    Next
 End Sub

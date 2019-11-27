@@ -23,6 +23,7 @@ Sub Auto_Open()
     Application.OnKey "^$", "ForeignAccounting"
     Application.OnKey "^5", "PercentCycle"
     Application.OnKey "^K", "BackgroundCycle"
+    Application.OnKey "^J", "FormatTableAlternating"
     Application.OnKey "^8", "MultipleCycle"
     Application.OnKey "^D", "DateCycle"
     Application.OnKey "^,", "'DecimalChange ""Increase""'"
@@ -222,4 +223,31 @@ Private Sub UnderlineCycle()
         Selection.Font.Underline = xlUnderlineStyleNone
         Else: Selection.Font.Underline = xlUnderlineStyleSingleAccounting
     End If
+End Sub
+
+Private Sub FormatTableAlternating()
+
+    Application.ScreenUpdating = False
+
+    Dim actCell As Range
+    Dim myRng As Range
+    Dim myCell As Range
+    Dim darkRow As Integer
+    
+    Set myRng = Selection
+    Set actCell = ActiveCell
+    darkRow = ActiveCell.Row Mod 2
+
+    For Each myCell In myRng.Cells
+        If myCell.Row Mod 2 = darkRow Then
+            myCell.Interior.Color = RGB(208, 216, 232)
+        Else: myCell.Interior.Color = RGB(233, 237, 244)
+        End If
+    Next myCell
+
+    myRng.Select
+    actCell.Activate
+
+    Application.ScreenUpdating = True
+    
 End Sub
